@@ -79,8 +79,8 @@ public:
                 c_strategy = new Nuke_CookStategy;
                 break;
             } 
-            c_strategy->Cook();
-        }
+            c_strategy->Cook(); 
+        } 
 
         for (int i = 0; i < 3; i++) {
             if (eatMethod[i] == -1) {

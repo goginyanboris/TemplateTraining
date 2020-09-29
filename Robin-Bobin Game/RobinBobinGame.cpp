@@ -6,6 +6,8 @@
 //Если последовательность верная, игра продолжается, иначе барабек умирает
 
 #include <iostream>
+#include <fstream>
+
 
 class RobinCookStrategy {
 public:
@@ -60,9 +62,35 @@ public:
         e_strategy = strategy;
     }
 
+    bool inputValidation(std::string product, int* eatMethod, int* cookMethod) {
+        bool trueSequence = false;
+        // открытие файла
+        std::ifstream file;
+        file.open("RB_Game_products.txt");
+        
+        if (file.is_open()) // вызов метода is_open()
+            std::cout << "Файл открыт\n\n" << std::endl;
+        else
+        {
+            std::cout << "Файл не открыт!\n\n" << std::endl;
+            return -1;
+        }
+
+        // нахождение соответствующего блюда
+        std::string g_product;
+        while (g_product != product) {
+            file >> g_product;
+            std::cout << g_product;
+        }
+
+
+        // нахождение способа его готовки и сравнение с вводом игрока
+        // если совпадает - победа
+    }
+
     void executeStrategy(int* eatMethod, int* cookMethod) {
-        for (int i = 0; i < 3; i++) {
-            if (cookMethod[i] == -1) {
+        for (int i = 0; i < 4; i++) {
+            if (cookMethod[i] == 0) {
                 break;
             }
             switch (cookMethod[i]) {
@@ -82,8 +110,8 @@ public:
             c_strategy->Cook(); 
         } 
 
-        for (int i = 0; i < 3; i++) {
-            if (eatMethod[i] == -1) {
+        for (int i = 0; i < 4; i++) {
+            if (eatMethod[i] == 0) {
                 break;
             }
             switch (eatMethod[i]) {
@@ -110,7 +138,7 @@ public:
 int main()
 {
 
-    std::cout << "Hello World!\n";
+    
 }
 
 // Запуск программы: CTRL+F5 или меню "Отладка" > "Запуск без отладки"

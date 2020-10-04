@@ -16,15 +16,15 @@ public:
 
 
 class Pot_CookStategy : public RobinCookStrategy{ // кастрюля
-    void Cook() { std::cout << "Варим в кастрюле"; }
+    void Cook() { std::cout << "\nВарим в кастрюле\n"; }
 };
 
 class Oven_CookStategy : public RobinCookStrategy { // духовка
-    void Cook() { std::cout << "Запекаем в духовке"; }
+    void Cook() { std::cout << "\nЗапекаем в духовке\n"; }
 };
 
 class Nuke_CookStategy : public RobinCookStrategy { // микроволновка
-    void Cook() { std::cout << "Подогреваем в микроволновке"; }
+    void Cook() { std::cout << "\nПодогреваем в микроволновке\n"; }
 };
 
 
@@ -35,17 +35,17 @@ public:
 
 class Chew_EatStrategy : public RobinEatStrategy{
 public:
-    void Eat() { std::cout << "Тщательно прожуем"; }
+    void Eat() { std::cout << "\nТщательно прожуем\n"; }
 };
 
 class Swallow_EatStrategy : public RobinEatStrategy {
 public:
-    void Eat() { std::cout << " Глотаем залпом"; }
+    void Eat() { std::cout << "\nГлотаем залпом\n"; }
 };
 
 class Lubrikate_EatStrategy : public RobinEatStrategy {
 public:
-    void Eat() { std::cout << "Зальем сначала масла"; }
+    void Eat() { std::cout << "\nЗальем  масла\n"; }
 };
 
 
@@ -62,34 +62,8 @@ public:
         e_strategy = strategy;
     }
 
-    bool inputValidation(std::string product, int* eatMethod, int* cookMethod) {
-        bool trueSequence = false;
-        // открытие файла
-        std::ifstream file;
-        file.open("RB_Game_products.txt");
-        
-        if (file.is_open()) // вызов метода is_open()
-            std::cout << "Файл открыт\n\n" << std::endl;
-        else
-        {
-            std::cout << "Файл не открыт!\n\n" << std::endl;
-            return -1;
-        }
-
-        // нахождение соответствующего блюда
-        std::string g_product;
-        while (g_product != product) {
-            file >> g_product;
-            std::cout << g_product;
-        }
-
-
-        // нахождение способа его готовки и сравнение с вводом игрока
-        // если совпадает - победа
-    }
-
-    void executeStrategy(int* eatMethod, int* cookMethod) {
-        for (int i = 0; i < 4; i++) {
+    void executeStrategy(const int* eatMethod, const int* cookMethod) {
+        for (int i = 0; i < 3; i++) {
             if (cookMethod[i] == 0) {
                 break;
             }
@@ -110,18 +84,18 @@ public:
             c_strategy->Cook(); 
         } 
 
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < 3; i++) {
             if (eatMethod[i] == 0) {
                 break;
             }
             switch (eatMethod[i]) {
             case 1:
-                // програтывание залпом
-                e_strategy = new Chew_EatStrategy;
-                break;
-            case 2:
                 // тщательное разжевывание
                 e_strategy = new Swallow_EatStrategy;
+                break;
+            case 2:
+                // програтывание залпом
+                e_strategy = new Chew_EatStrategy;
                 break;
             case 3:
                 // предварительный залив масла
@@ -134,9 +108,98 @@ public:
     }
 };
 
+void writeMass(int* mass) {
+    bool errorFlag = true;
+    while (errorFlag) {
+        if (mass[0] / 100 == 0 && mass[0] / 10 != 0) // число двузначное
+        {
+            // std::cout << "2 s\n";
+            mass[1] = mass[0] % 10;
+            mass[0] = mass[0] / 10;
+            errorFlag = false;
+        }
+        else if (mass[0] / 1000 == 0 && mass[0] / 100 != 0 && mass[0] / 10 != 0) { // число трехзначное
+            // std::cout << "3 s\n";
+            mass[2] = mass[0] % 10;
+            mass[0] = mass[0] / 10;
+            mass[1] = mass[0] % 10;
+            mass[0] = mass[0] / 10;
+            errorFlag = false;
+        }
+        else if (mass[0] / 1000 == 0 && mass[0] / 100 != 0) { //   четрехзначное
+            std::cout << "Введено больше действий, чем возможно для выполнения" << std::endl;
+            std::cout << mass[0] / 100 << " " << mass[0] / 10 << " " << mass[0] << std::endl;
+            std::cin >> mass[0];
+        }
+        else {
+            // std::cout << "1 s\n";
+            errorFlag = false;
+        }
+    }
+
+    // std::cout << "mass: " << mass[0] << mass[1] << mass[2];
+}
+
 
 int main()
 {
+    setlocale(LC_ALL, "ru");
+
+    std::ifstream file;
+    file.open("RB_Game_products.txt");
+
+    if (!file.is_open()) {// вызов метода is_open()
+        std::cout << "Файл не открыт\n\n" << std::endl;
+        return -1;
+    }
+    else {
+        std::cout << "Файл открыт!\n" << std::endl;
+        std::string product;
+
+        int eatMass[3] = { 0 };
+        int cookMass[3] = { 0 };
+        while (!file.eof()) {
+            
+            file >> product;
+            std::cout << "Робин Бобин проголодался. Следующее его блюдо: " << product;
+            file >> product;
+            if (product == "!") {
+                
+                std::cout << "\nВыберете как и/или в какой последовательности его следует приготовить:\n" <<
+                    "1. сварить в кастрюле\n2. запечь в духовке\n3. подогреть в микроволновке\n";
+                
+                std::cin >> cookMass[0];
+
+                writeMass(cookMass);
+
+                std::cout << "\nВыберете как и/или в какой последовательности его следует принимать внутрь:\n" <<
+                    "1. програтывать залпом\n2. тщательно прожевать\n3. предварительно залив маслом\n";
+
+                std::cin >> eatMass[0];
+
+                writeMass(eatMass);
+
+                std::cout << "\ncookmass: " << cookMass[0] << cookMass[1] << cookMass[2];
+                std::cout << "\neatmass: " << eatMass[0] << eatMass[1] << eatMass[2];
+            }
+            else {
+                std::cout << "error/ product = " << product << std::endl;
+                exit();
+            }
+            Robin game;
+            game.executeStrategy(eatMass, cookMass);
+
+            
+            // проверка ввода
+
+                file >> 
+
+            
+        }
+    }
+
+
+    // нахождение соответствующего блюда
 
     
 }

@@ -45,7 +45,7 @@ public:
 
 class Lubrikate_EatStrategy : public RobinEatStrategy {
 public:
-    void Eat() { std::cout << "\nЗальем  масла\n"; }
+    void Eat() { std::cout << "\nЗальем масла\n"; }
 };
 
 
@@ -162,44 +162,57 @@ int main()
             
             file >> product;
             std::cout << "Робин Бобин проголодался. Следующее его блюдо: " << product;
-            file >> product;
-            if (product == "!") {
                 
-                std::cout << "\nВыберете как и/или в какой последовательности его следует приготовить:\n" <<
+            std::cout << "\nВыберете как и/или в какой последовательности его следует приготовить:\n" <<
                     "1. сварить в кастрюле\n2. запечь в духовке\n3. подогреть в микроволновке\n";
                 
-                std::cin >> cookMass[0];
+            std::cin >> cookMass[0];
 
-                writeMass(cookMass);
+            writeMass(cookMass);
 
-                std::cout << "\nВыберете как и/или в какой последовательности его следует принимать внутрь:\n" <<
+            std::cout << "\nВыберете как и/или в какой последовательности его следует принимать внутрь:\n" <<
                     "1. програтывать залпом\n2. тщательно прожевать\n3. предварительно залив маслом\n";
 
-                std::cin >> eatMass[0];
+            std::cin >> eatMass[0];
 
-                writeMass(eatMass);
+            writeMass(eatMass);
 
-                std::cout << "\ncookmass: " << cookMass[0] << cookMass[1] << cookMass[2];
-                std::cout << "\neatmass: " << eatMass[0] << eatMass[1] << eatMass[2];
-            }
-            else {
-                std::cout << "error/ product = " << product << std::endl;
-                exit();
-            }
+            //std::cout << "\ncookmass: " << cookMass[0] << cookMass[1] << cookMass[2];
+            //std::cout << "\neatmass: " << eatMass[0] << eatMass[1] << eatMass[2];
+
             Robin game;
             game.executeStrategy(eatMass, cookMass);
 
             
             // проверка ввода
+            int cookCheck[3] = { 0 };
+            int eatCheck[3] = { 0 };
+            file >> cookCheck[0];
+            writeMass(cookCheck);
 
-                file >> 
+            file >> eatCheck[0];
+            writeMass(eatCheck);
 
+            //std::cout << "\ncookmass: " << cookCheck[0] << cookCheck[1] << cookCheck[2];
+            //std::cout << "\neatmass: " << eatCheck[0] << eatCheck[1] << eatCheck[2] << std::endl;
             
+            bool winCheck = true;
+            for(int i = 0; i < 4; i++) {
+                if (cookMass[i] != cookCheck[i] ) {
+                    std::cout << "неправильно приготовленная пища вызвала несварение. GAME OVER\n\n";
+                    exit(-1);
+                }
+                if (eatMass[i] != eatCheck[i]) {
+                    std::cout << "Робин подавился и умер. GAME OVER\n\n";
+                    exit(-1);
+                }
+            }
+
+            if (winCheck) {
+                std::cout << "Поздравляем, продукт " << product << "съеден. \n";
+            }
         }
     }
-
-
-    // нахождение соответствующего блюда
 
     
 }

@@ -2,108 +2,265 @@
 //
 
 #include <iostream>
-#include <vector>
+#include <list>
+#include <string>
+#include <cmath>
 
-class ISubscriber;
 
-class Gold {
+class IObserver // interface publisher издатель
+{
+public:
+    virtual ~IObserver() {};
+    virtual void Update(const std::string & message_from_subject) = 0;
+};
+
+class ISubject { // interface Издателя
+public:
+    virtual ~ISubject() {};
+    virtual void Attach(IObserver* observer) = 0;
+    virtual void Detach(IObserver* observer) = 0;
+    virtual void Notify() = 0;
+};
+
+class Subject : public ISubject // издатель
+{
 private:
-    const int ID = 1;
+    std::list<IObserver*> listPublisher;
+    std::string name = "empty";
+
+public:
+    virtual ~Subject(){
+        std::cout << "Subject delete\n";
+    }
+
+    // Управление подпиской в Издателе
+    void Attach(IObserver* observer) override {
+        listPublisher.push_back(observer);
+    }
+
+    void Detach(IObserver* observer) override {
+        listPublisher.remove(observer);
+    }
+
+    void Notify() override {
+        std::list<IObserver*>::iterator it = listPublisher.begin();
+
+        std::cout << "There are " << listPublisher.size() << " observers in the list.\n";
+
+    }
+
+    virtual void ShowName() {
+        std::cout << name;
+    }
+
+    virtual double getState() = 0;
+    
+};
+
+class Observer : public IObserver { // подписчик, наблюдатель
+private:
+    std::string messageFromSubject;
+    Subject& m_subject; // издатель
+    static int staticNumber;
+    int m_number;
+    int count; // кол-во продуктов определенного издателя
+
+    static double money;
+public:
+    Observer(Subject& subject) : m_subject(subject) {
+        this->m_subject.Attach(this);
+        ++Observer::staticNumber;
+        std::cout << "Подписка оформлена.\n";
+        this->m_number = Observer::staticNumber;
+    }
+
+    virtual ~Observer()
+    {
+        std::cout << "Observer \"" << this->m_number << "\" was delete.\n";
+    }
+
+    void PrintInfo() {
+        std::cout << "Observer \"" << this->m_number << "\": a new message is available --> " << this->messageFromSubject << "\n";
+    }
+
+    void Update(const std::string& message_from_subject) override {
+        messageFromSubject = message_from_subject;
+        PrintInfo();
+    }
+
+    static void getBalance() {
+        std::cout << "\nУ вас на счету: " << money << std::endl;
+    }
+
+    void ShowSubjectName() {
+        m_subject.ShowName();
+    }
+
+    bool Buy(int choise) {
+        if (choise * m_subject.getState() < money) {
+            money -= choise * m_subject.getState();
+            count += choise;
+            return true;
+        }
+        else {
+            std::cout << "Деняк не ма\n";
+            return false;
+        }
+    }
+   
+};
+
+int Observer::staticNumber = 0;
+double Observer::money = 1000.0;
+
+class Gold : public Subject {  // 
+private:
     double state;
-    std::vector<ISubscriber*> subMass[10];
-
+    std::string name = "Gold";
 public:
-    void subscribe(ISubscriber* subscriber) {
-        subMass.push_front(subscriber);
+
+    Gold() {
+        state = (rand() % 100 + 1);
     }
 
-    void unSubscribe() {
-        subMass.pop_front();
+    void UpdateState()
+    {
+        state += (rand() % 200 + 1) * pow(-1, rand());
     }
 
-    void SendState() {
-        for (int i = 0; i < subMass.size(); i++) {
-            subMass[i]->OnRecive(ID, state);
-        }
+    void ShowState() {
+        std::cout << "Price on Gold = " << state << std::endl;
     }
+
+
+    double getState() { return state; }
+
 };
 
-class Silver {
+class Silver : public Subject { // издатель
 private:
-    const int ID = 2;
     double state;
-    std::vector<ISubscriber> subMass[10];
-
+    std::string name = "Silver";
 public:
-    void subscribe(ISubscriber* subscriber) {
-        subMass.push_front(subscriber);
+    Silver() {
+        state = (rand() % 100 + 1);
     }
 
-    void unSubscribe() {
-        subMass.pop_front();
+    void UpdateState()
+    {
+        state += (rand() % 100 + 1) * pow(-1, rand());
     }
 
-    void SendState() {
-        for (int i = 0; i < subMass.size(), i++) {
-            subMass[i]->OnRecive(ID, state);
-        }
+    void ShowState() {
+        std::cout << "Price on Silver = " << state << std::endl;
     }
+
+    double getState() { return state; }
 };
 
-class ISubscriber {
-public:
-    virtual void OnRecive(double state) {};
-};
-
-class Person1 : public ISubscriber {
-private:
-    const int ID = 1;
-public:
-    void OnRecive(const int id, double state) {
-        switch (id) {
-        case 1:
-            std::cout << "GOLD:" << state;
-        case 2:
-            std::cout << "SILVER:" << state;
+class Iterator {
+private: 
+    Observer* m_data[2];
+    int m_it = 0;
+    int m_lenght;
+public: 
+    Iterator(Observer** data, int lenght) : m_lenght(lenght) {
+        for (int i = 0; i < lenght; i++) {
+            m_data[i] = data[i];
         }
     }
 
+    void First() {
+        m_it = 0;
+    }
+
+    void Next() {
+        m_it++;
+    }
+
+    bool IsDone() {
+        return (m_it == m_lenght);
+    }
+
+    Observer* Current() {
+        return m_data[m_it];
+    }
+
+
 
 };
+
+
 
 
 int main()
 {
-    int p;
-    Gold gold;
-    Silver silver;
-    Person1 person1;
-    int subsMass[5] = { 0 };
-    double wallet = 100;
+    setlocale(LC_ALL, "ru");
+
+    Gold* gold = new Gold;
+    Silver* silver = new Silver;
+
+    Observer* playerActive[2] = {nullptr, nullptr}; //коллекция; 0- отвечает за золото // 1- отвечает за серебро
+
+    int choise;
+    double choicePrice;
+    bool moneyOver = false;
+    int iteration = 0;
+
+    Iterator it(playerActive, 2);
     while (true) {
-
-        std::cout << "На бирже ведутся торги следующих активов:";
-        std::cout << "gold,\nsilver.";
-        std::cout << "вы подписаны на:\n";
-        for (int i = 1; i < subsMass.size(); i++) {
-            if (subsMass[i] != 0) {
-                std::cout << subsMass[i];
-            }
-        }
-        std::cout << "будем ли подписываться?\n 1. Yes\n2. No\n";
-        std::cin >> p;
-        if (p == 1) {
-            std::cin >> p;
-            switch (p) {
-            case 1:
-                gold.subscribe(&person1);
-            case 2:
-                silver.subscribe(&person1);
+        if (iteration > 0) {
+            std::cout << "У вас для продажи имеются следующие активы:\n";
+            for (it.First() = 0; it.IsDone(); it.Next()) {
+                it.Current()->ShowSubjectName();
             }
         }
 
-        subsMass[p - 1] = p; // массив подписок
+        std::cout << "На бирже ведутся торги.\n";
+        silver->ShowState();
+        gold->ShowState();
 
+        std::cout << "Чем будем торговать?\n1. Золотом \n2. Серебром\n";
+        std::cin >> choise;
+        if (choise == 1) {
+            if(iteration = 0)
+                playerActive[0] = new Observer(*gold);
+
+            Observer::getBalance();
+            std::cout << "\nСколько будем покупать Золота?\n";
+            std::cin >> choicePrice;
+            moneyOver = playerActive[0]->Buy(choicePrice);
+
+        }
+        else if  (choise == 2) {
+            if (iteration = 0)
+                playerActive[1] = new Observer(*silver);
+
+            Observer::getBalance();
+            std::cout << "\nСколько будем покупать Серебра?\n";
+            std::cin >> choicePrice;
+            moneyOver = playerActive[1]->Buy(choicePrice);
+        }
+        else {
+            playerActive[0] = new Observer(*gold);
+            playerActive[1] = new Observer(*silver);
+
+            Observer::getBalance();
+            std::cout << "Сколько будем покупать Золота?\n";
+            std::cin >> choicePrice;
+            moneyOver = playerActive[0]->Buy(choicePrice);
+
+            std::cout << "Сколько будем покупать Серебра?\n";
+            std::cin >> choicePrice;
+            moneyOver = playerActive[1]->Buy(choicePrice);
+        }
+
+        if (moneyOver) {
+            std::cout << "Game Over";
+            exit(-1);
+        }
+
+        ++iteration;
     }
 }
 // Запуск программы: CTRL+F5 или меню "Отладка" > "Запуск без отладки"

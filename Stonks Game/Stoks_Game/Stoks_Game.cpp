@@ -26,7 +26,6 @@ class Subject : public ISubject // издатель
 {
 private:
     std::list<IObserver*> listPublisher;
-    std::string name = "empty";
 
 public:
     virtual ~Subject(){
@@ -49,9 +48,7 @@ public:
 
     }
 
-    virtual void ShowName() {
-        std::cout << name;
-    }
+    virtual void ShowName() = 0;
 
     virtual double getState() = 0;
     
@@ -92,19 +89,19 @@ public:
         std::cout << "\nУ вас на счету: " << money << std::endl;
     }
 
-    void ShowSubjectName() {
+    virtual void ShowSubjectName() {
         m_subject.ShowName();
     }
 
-    bool Buy(int choise) {
+    virtual bool Buy(int choise) {
         if (choise * m_subject.getState() < money) {
             money -= choise * m_subject.getState();
             count += choise;
-            return true;
+            return false;
         }
         else {
             std::cout << "Деняк не ма\n";
-            return false;
+            return true;
         }
     }
    
@@ -132,6 +129,9 @@ public:
         std::cout << "Price on Gold = " << state << std::endl;
     }
 
+    virtual void ShowName() {
+        std::cout << name << std::endl;
+    };
 
     double getState() { return state; }
 
@@ -155,26 +155,30 @@ public:
         std::cout << "Price on Silver = " << state << std::endl;
     }
 
+    virtual void ShowName() {
+        std::cout << name << std::endl;
+    };
+
     double getState() { return state; }
 };
 
 class Iterator {
 private: 
-    Observer* m_data[2];
+    Observer** m_data;
     int m_it = 0;
     int m_lenght;
 public: 
     Iterator(Observer** data, int lenght) : m_lenght(lenght) {
-        for (int i = 0; i < lenght; i++) {
-            m_data[i] = data[i];
-        }
+        m_data = data;
     }
 
     void First() {
+        //std::cout << "first\n";
         m_it = 0;
     }
 
     void Next() {
+        //std::cout << "next\n";
         m_it++;
     }
 
@@ -183,11 +187,12 @@ public:
     }
 
     Observer* Current() {
+        //std::cout << "current\n";
+        
         return m_data[m_it];
+        
+        
     }
-
-
-
 };
 
 
@@ -200,7 +205,7 @@ int main()
     Gold* gold = new Gold;
     Silver* silver = new Silver;
 
-    Observer* playerActive[2] = {nullptr, nullptr}; //коллекция; 0- отвечает за золото // 1- отвечает за серебро
+    Observer** playerActive = new Observer*[2]{nullptr, nullptr}; //коллекция; 0- отвечает за золото // 1- отвечает за серебро
 
     int choise;
     double choicePrice;
@@ -211,8 +216,11 @@ int main()
     while (true) {
         if (iteration > 0) {
             std::cout << "У вас для продажи имеются следующие активы:\n";
-            for (it.First() = 0; it.IsDone(); it.Next()) {
-                it.Current()->ShowSubjectName();
+            it.First();
+            while (!it.IsDone()) {
+                if(it.Current() != nullptr)
+                    it.Current()->ShowSubjectName();
+                it.Next();
             }
         }
 
@@ -223,7 +231,7 @@ int main()
         std::cout << "Чем будем торговать?\n1. Золотом \n2. Серебром\n";
         std::cin >> choise;
         if (choise == 1) {
-            if(iteration = 0)
+            if (playerActive[0] == nullptr)
                 playerActive[0] = new Observer(*gold);
 
             Observer::getBalance();
@@ -233,7 +241,7 @@ int main()
 
         }
         else if  (choise == 2) {
-            if (iteration = 0)
+            if (playerActive[1] == nullptr)
                 playerActive[1] = new Observer(*silver);
 
             Observer::getBalance();
@@ -255,7 +263,7 @@ int main()
             moneyOver = playerActive[1]->Buy(choicePrice);
         }
 
-        if (moneyOver) {
+        if (moneyOver == true) {
             std::cout << "Game Over";
             exit(-1);
         }

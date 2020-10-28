@@ -29,6 +29,9 @@ void IWorker::coffe() {
     std::cout << "Вернулся в офис\n";
 }
 
+
+
+
 class Boss
 {
 private:
@@ -64,7 +67,6 @@ class MainDeveloper : public IWorker {
 
 int main()
 {
-
     setlocale(LC_ALL, "ru");
 
     int choise;

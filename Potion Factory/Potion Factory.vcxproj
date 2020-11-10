@@ -21,8 +21,8 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{9ec49904-0635-4fff-a7cd-460f89796c31}</ProjectGuid>
-    <RootNamespace>AbstractFactoryandBuilder</RootNamespace>
+    <ProjectGuid>{2c60c510-9fee-4022-b18d-dd006427ae59}</ProjectGuid>
+    <RootNamespace>PotionFactory</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -139,7 +139,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Abstract Factory and Builder.cpp" />
+    <ClCompile Include="Potion Factory.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

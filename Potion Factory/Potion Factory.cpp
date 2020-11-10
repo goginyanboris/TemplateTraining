@@ -3,6 +3,32 @@
 
 #include <iostream>
 
+class IPotionBrew {
+public:
+    virtual ~IPotionBrew() {};
+    virtual void  The_choice_of_container() const = 0; // выбор емкости для зелья
+    virtual void Basic_ingredient() const = 0; // выбор основного ингредиента
+    virtual void Seasoning() const = 0; // выбор второго ингредиента
+    virtual void Spell() const = 0; // заклинание
+};
+
+void IPotionBrew::The_choice_of_container() const {
+    std::cout << "Квадратная, Круглая, Овальная\n";
+}
+
+void IPotionBrew::Basic_ingredient() const {
+    std::cout << "Волос единорога, корень мандрагоры, крыло летучей мыши\n";
+}
+
+void IPotionBrew::Seasoning() const {
+    std::cout << "Пыльца феи, порошок из мух, личинки муравьев, слизь улиток, корица\n";
+} // выбор второго ингредиента
+
+
+void IPotionBrew::Spell() const {
+    std::cout << "Аларте Аскендаре, Баубиллиус, Брахиам Эмендо, Випера Эванеско\n";
+} // заклинание
+
 /**
  * Каждый отдельный продукт семейства продуктов должен иметь базовый интерфейс.
  * Все вариации продукта должны реализовывать этот интерфейс.
@@ -20,6 +46,50 @@ class Potion_of_hiccups : public Heal_potion { // зелье от икоты
 public:
     std::string Brew() const override {
         return "the potion of hiccups is ready\n";
+    }
+};
+
+class HiccupsPotionBrew : public IPotionBrew {
+private:
+    Potion_of_hiccups* potion;
+public:
+    void Reset() {
+        if (this->potion != nullptr) {
+            delete potion;
+        }
+        this->potion = new Potion_of_hiccups;
+    }
+
+    HiccupsPotionBrew() {
+        potion = new Potion_of_hiccups;
+    }
+
+    ~HiccupsPotionBrew() {
+        delete potion;
+        potion = nullptr;
+    }
+
+    void  The_choice_of_container() const override{
+        IPotionBrew::The_choice_of_container();
+    
+    } // выбор емкости для зелья
+
+    void Basic_ingredient() const {
+        IPotionBrew::Basic_ingredient();
+    }
+
+    void Seasoning() const {
+        IPotionBrew::Seasoning();
+    } // выбор второго ингредиента
+
+    void Spell() const {
+        IPotionBrew::Spell();
+    } // заклинание
+
+    Potion_of_hiccups* GetPotion() { // Конкретные Строители должны предоставить свои собственные методы 
+        Potion_of_hiccups* result = this->potion; // получения результатов.
+        this->Reset();
+        return result;                   
     }
 };
 
@@ -56,8 +126,8 @@ public:
         return "the Hiccup potion is ready\n";
     }
     /**
-     * Продукт B1 может корректно работать только с Продуктом A1. Тем не менее, он
-     * принимает любой экземпляр Абстрактного Продукта А в качестве аргумента.
+     * Продукт Hiccup_potion может корректно работать только с Продуктом Potion_of_hiccups. Тем не менее, он
+     * принимает любой экземпляр Абстрактного Продукта Heal_potion в качестве аргумента.
      */
     std::string Blend(const Heal_potion& collaborator) const override {
         const std::string result = collaborator.Brew();
@@ -65,7 +135,7 @@ public:
     }
 };
 
-class Belch_potion : public Harmful_potion { // Зелье рыгания — заставляет беперерывно рыгать.
+class Belch_potion : public Harmful_potion { // Зелье рыгания — заставляет беcперерывно рыгать.
 public:
     std::string Brew() const {
         return "the Belch potion is ready\n";

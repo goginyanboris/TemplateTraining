@@ -3,13 +3,14 @@
 
 #include <iostream>
 
-class IPotionBrew {
+class IPotionBrew { // строитель
 public:
     virtual ~IPotionBrew() {};
     virtual void  The_choice_of_container() const = 0; // выбор емкости для зелья
     virtual void Basic_ingredient() const = 0; // выбор основного ингредиента
     virtual void Seasoning() const = 0; // выбор второго ингредиента
     virtual void Spell() const = 0; // заклинание
+
 };
 
 void IPotionBrew::The_choice_of_container() const {
@@ -39,15 +40,6 @@ public:
     virtual std::string Brew() const = 0;
 };
 
-/**
- * Конкретные продукты создаются соответствующими Конкретными Фабриками.
- */
-class Potion_of_hiccups : public Heal_potion { // зелье от икоты
-public:
-    std::string Brew() const override {
-        return "the potion of hiccups is ready\n";
-    }
-};
 
 class HiccupsPotionBrew : public IPotionBrew {
 private:
@@ -57,11 +49,11 @@ public:
         if (this->potion != nullptr) {
             delete potion;
         }
-        this->potion = new Potion_of_hiccups;
+        this->potion = new Potion_of_hiccups();
     }
 
     HiccupsPotionBrew() {
-        potion = new Potion_of_hiccups;
+        potion = new Potion_of_hiccups();
     }
 
     ~HiccupsPotionBrew() {
@@ -69,9 +61,9 @@ public:
         potion = nullptr;
     }
 
-    void  The_choice_of_container() const override{
+    void  The_choice_of_container() const override {
         IPotionBrew::The_choice_of_container();
-    
+
     } // выбор емкости для зелья
 
     void Basic_ingredient() const {
@@ -89,9 +81,37 @@ public:
     Potion_of_hiccups* GetPotion() { // Конкретные Строители должны предоставить свои собственные методы 
         Potion_of_hiccups* result = this->potion; // получения результатов.
         this->Reset();
-        return result;                   
+        return result;
     }
 };
+
+/**
+ * Конкретные продукты создаются соответствующими Конкретными Фабриками.
+ */
+class Potion_of_hiccups : public Heal_potion { // зелье от икоты
+private:
+    HiccupsPotionBrew* brew_p;
+
+public:
+    Potion_of_hiccups() {
+        this->brew_p = new HiccupsPotionBrew;
+    }
+
+    std::string ToString(const Potion_of_hiccups* ph) const {
+        return "the potion of hiccups is ready\n";
+    }
+
+    std::string Brew() const override {
+        this->brew_p->The_choice_of_container();
+        this->brew_p->Basic_ingredient();
+        this->brew_p->Seasoning(); // приправа
+        this->brew_p->Spell(); // заклинание
+        
+        return ToString(brew_p->GetPotion());
+        
+    }
+};
+
 
 class Potion_from_burping : public Heal_potion { // Зелье от рыгания
     std::string Brew() const override {
@@ -101,7 +121,7 @@ class Potion_from_burping : public Heal_potion { // Зелье от рыгани
 
 class Potion_of_silence : public Heal_potion {// зелье молчания
     std::string Brew() const override {
-        return "the potion of beauty is ready\n";
+        return "the potion of silence is ready\n";
     }
 };
 
@@ -171,7 +191,7 @@ public:
 };
 
 
-class Hiccup_factory : public AbstractPotionFactory {
+class Hiccup_factory : public AbstractPotionFactory { // икательная фабрика
 public:
     Heal_potion* CreateHealPotion() const override {
         return new Potion_of_hiccups;
@@ -181,7 +201,7 @@ public:
     }
 };
 
-class Burp_factory : public AbstractPotionFactory {
+class Burp_factory : public AbstractPotionFactory { // рыгательная фабрика
 public:
     Heal_potion* CreateHealPotion() const override {
         return new Potion_from_burping;
@@ -191,7 +211,7 @@ public:
     }
 };
 
-class Funny_factory : public AbstractPotionFactory {
+class Funny_factory : public AbstractPotionFactory { // веселящаяя
 public:
     Heal_potion* CreateHealPotion() const override {
         return new Potion_of_silence;
@@ -205,7 +225,53 @@ public:
 
 int main()
 {
-    std::cout << "Hello World!\n";
+    setlocale(LC_ALL, "ru");
+
+    Hiccup_factory* hiccup_f = new Hiccup_factory();
+    Burp_factory* burp_f = new Burp_factory();
+    Funny_factory* funny_f = new Funny_factory();
+
+    std::cout << "Налей мне пивка, ведьма!\n";
+    std::cout << "Выберете зелье, которое будете варить вместо пива:\n 1. Рыгательное зелье\n 2. Икотное зелье 3. Зелье смеха\n" <<
+        "4. Зелье от несварения\n 5. Зелье от икоты\n 6. Успокаивающий бальзам\n";
+    int choise;
+    bool harmHeal = false; // harmful = false \ heal = true
+    std::cin >> choise;
+
+    const Harmful_potion* harmful_p;
+    const Heal_potion* heal_p;
+
+    switch(choise) {
+    case 1:
+        harmful_p = hiccup_f->CreateHarmfulPotion();
+        break;
+    case 2:
+        harmful_p = burp_f->CreateHarmfulPotion();
+        break;
+    case 3:
+        harmful_p = funny_f->CreateHarmfulPotion();
+        break;
+    case 4:
+        heal_p = hiccup_f->CreateHealPotion();
+        harmHeal = true;
+        break;
+    case 5:
+        heal_p = burp_f->CreateHealPotion();
+        harmHeal = true;
+        break;
+    case 6:
+        heal_p = funny_f->CreateHealPotion();
+        harmHeal = true;
+        break;
+    }
+
+    if (harmHeal) {
+        std::cout << heal_p->Brew();  // Heal
+    }
+    else {
+        std::cout << harmful_p->Brew();//harmful
+    }
+
 }
 
 // Запуск программы: CTRL+F5 или меню "Отладка" > "Запуск без отладки"

@@ -60,9 +60,9 @@ private:
     Heal_potion* potion;
 public:
     void Reset() {
-        if (this->potion != nullptr) {
-            delete potion;
-        }
+        //if (this->potion != nullptr) {
+        //    delete potion;
+        //}
         potion = new Potion_of_hiccups();
     }
 
